@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ryan Silva — Dev & Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b10;
+    --bg2: #0d1117;
+    --bg3: #161b22;
+    --border: rgba(255,255,255,0.07);
+    --purple: #bc8cff;
+    --purple-dim: rgba(188,140,255,0.12);
+    --teal: #5dcaa5;
+    --teal-dim: rgba(93,202,165,0.1);
+    --coral: #f0997b;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --faint: #484f58;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 10px; height: 10px;
+    background: var(--purple);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease;
+    mix-blend-mode: screen;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(188,140,255,0.4);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.08s ease;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Nav */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.25rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(8,11,16,0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--purple);
+    letter-spacing: 2px;
+  }
+
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  /* Hero */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 0 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 70% 50%, rgba(188,140,255,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 20% 80%, rgba(93,202,165,0.05) 0%, transparent 60%);
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 800px; }
+
+  .hero-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--teal);
+    letter-spacing: 3px;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero-name {
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -2px;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s forwards;
+  }
+
+  .hero-name span { color: var(--purple); }
+
+  .hero-desc {
+    font-size: 1.1rem;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 500px;
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s forwards;
+  }
+
+  .hero-desc strong { color: var(--text); font-weight: 500; }
+
+  .hero-ctas {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.8s forwards;
+  }
+
+  .btn-primary {
+    background: var(--purple);
+    color: #080b10;
+    padding: 0.75rem 1.75rem;
+    border-radius: 4px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+
+  .btn-ghost {
+    border: 0.5px solid var(--border);
+    color: var(--muted);
+    padding: 0.75rem 1.75rem;
+    border-radius: 4px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    transition: border-color 0.2s, color 0.2s, transform 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--purple); color: var(--purple); transform: translateY(-1px); }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 2rem;
+    left: 3rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--faint);
+    letter-spacing: 2px;
+    opacity: 0;
+    animation: fadeUp 0.8s 1.2s forwards;
+  }
+
+  .scroll-line {
+    width: 40px;
+    height: 0.5px;
+    background: var(--faint);
+    animation: scrollLine 2s ease-in-out infinite;
+  }
+
+  @keyframes scrollLine {
+    0%, 100% { width: 40px; opacity: 1; }
+    50% { width: 70px; opacity: 0.3; }
+  }
+
+  /* Sections */
+  section {
+    padding: 6rem 3rem;
+    position: relative;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--purple);
+    letter-spacing: 3px;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 3rem;
+    line-height: 1.1;
+  }
+
+  /* About */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .about-text p {
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 1.25rem;
+    font-size: 1rem;
+  }
+
+  .about-text p strong { color: var(--text); font-weight: 600; }
+
+  .faith-card {
+    border-left: 2px solid var(--purple);
+    padding: 1rem 1.25rem;
+    background: var(--purple-dim);
+    border-radius: 0 4px 4px 0;
+    margin-top: 1.5rem;
+    font-style: italic;
+    color: rgba(188,140,255,0.9);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .about-vibes {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .vibe-item {
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .vibe-item:hover { border-color: var(--purple); transform: translateX(4px); }
+  .vibe-icon { font-size: 20px; width: 32px; text-align: center; }
+  .vibe-label { color: var(--muted); }
+  .vibe-label strong { color: var(--text); display: block; font-size: 13px; }
+
+  /* Skills */
+  #skills { background: var(--bg2); }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .skill-card {
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    text-align: center;
+    transition: border-color 0.25s, transform 0.25s, background 0.25s;
+    cursor: default;
+  }
+  .skill-card:hover {
+    border-color: var(--purple);
+    background: var(--purple-dim);
+    transform: translateY(-4px);
+  }
+  .skill-card:hover .skill-name { color: var(--purple); }
+
+  .skill-icon { font-size: 28px; margin-bottom: 8px; }
+  .skill-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .skill-level {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--faint);
+    letter-spacing: 1px;
+  }
+  .skill-level.learning { color: var(--teal); }
+
+  /* Projects */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .project-card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    transition: border-color 0.25s, transform 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--purple), var(--teal));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  .project-card:hover { border-color: rgba(188,140,255,0.3); transform: translateY(-4px); }
+  .project-card:hover::before { transform: scaleX(1); }
+
+  .project-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--purple);
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+  }
+
+  .project-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.3px;
+  }
+
+  .project-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+  }
+
+  .project-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem; }
+  .project-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border);
+    color: var(--faint);
+    letter-spacing: 1px;
+  }
+
+  .project-link {
+    font-size: 12px;
+    color: var(--purple);
+    text-decoration: none;
+    letter-spacing: 1px;
+    font-family: 'DM Mono', monospace;
+    transition: opacity 0.2s;
+  }
+  .project-link:hover { opacity: 0.7; }
+
+  .em-breve {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--teal);
+    border: 0.5px solid var(--teal-dim);
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+  }
+
+  /* Contact */
+  #contato { background: var(--bg2); }
+
+  .contact-inner {
+    max-width: 600px;
+  }
+
+  .contact-desc {
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+    font-size: 1rem;
+  }
+
+  .contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .contact-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .contact-link:hover { border-color: var(--purple); transform: translateX(6px); }
+
+  .contact-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .contact-info-label {
+    font-size: 11px;
+    color: var(--faint);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+
+  .contact-info-val {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .contact-arrow {
+    margin-left: auto;
+    color: var(--purple);
+    font-size: 18px;
+  }
+
+  /* Footer */
+  footer {
+    padding: 2rem 3rem;
+    border-top: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .footer-left {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--faint);
+    letter-spacing: 1px;
+  }
+
+  .footer-right {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--faint);
+  }
+
+  .footer-right span { color: var(--purple); }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .hero, section { padding: 5rem 1.5rem; }
+    .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+    footer { padding: 1.5rem; flex-direction: column; align-items: flex-start; }
+    .hero-scroll { left: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<nav>
+  <div class="nav-logo">// RYM.DEV</div>
+  <ul class="nav-links">
+    <li><a href="#sobre">sobre</a></li>
+    <li><a href="#skills">skills</a></li>
+    <li><a href="#projetos">projetos</a></li>
+    <li><a href="#contato">contato</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content" style="display:flex; align-items:center; gap:3rem; flex-wrap:wrap;">
+    <div style="flex:1; min-width:280px;">
+      <p class="hero-tag">// fullstack dev & ui/ux designer</p>
+      <h1 class="hero-name">Ryan<br><span>Silva.</span></h1>
+      <p class="hero-desc">
+        Construo <strong>interfaces bonitas</strong> e código que funciona de verdade.
+        Bacharelando em <strong>Ciência da Computação</strong> na UNINOVE, apaixonado por design, café, música e por transformar ideias em experiências digitais.
+      </p>
+      <div class="hero-ctas">
+        <a href="#projetos" class="btn-primary">ver projetos</a>
+        <a href="#contato" class="btn-ghost">entrar em contato</a>
+      </div>
+    </div>
+    <div style="flex-shrink:0;">
+      <div style="width:220px; height:220px; border-radius:50%; border:2px solid rgba(188,140,255,0.3); padding:4px; position:relative;">
+        <img src="foto.png" alt="Ryan Silva" style="width:100%; height:100%; border-radius:50%; object-fit:cover; object-position:top;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div style="display:none; width:100%; height:100%; border-radius:50%; background:rgba(188,140,255,0.1); align-items:center; justify-content:center; font-size:4rem;">👤</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    scroll
+  </div>
+</section>
+
+<!-- Sobre -->
+<section id="sobre">
+  <p class="section-label reveal">// 001</p>
+  <h2 class="section-title reveal">sobre mim</h2>
+  <div class="about-grid">
+    <div class="about-text reveal">
+      <p>Oi! Sou <strong>Ryan Silva</strong>, dev fullstack e designer UI/UX de São Paulo. Bacharelando em <strong>Ciência da Computação na UNINOVE</strong> (conclusão 2026), gosto de estar nos dois lados — escrevendo código limpo e criando interfaces que as pessoas realmente querem usar.</p>
+      <p>Trabalho com <strong>HTML, CSS, JS, Python, Node.js, C, C++, C#, PL/SQL e Arduino</strong>. No design, uso <strong>Figma e Canva</strong>. Tenho inglês avançado e estou aprendendo coreano também! 🇰🇷</p>
+      <p>Fora do computador: música no fone (lofi + disco), café na mão, controle perto e uma boa dose de nerdice no dia a dia.</p>
+      <div style="display:flex; gap:8px; margin-top:1rem; flex-wrap:wrap;">
+        <span style="background:rgba(93,202,165,0.1); border:0.5px solid rgba(93,202,165,0.3); color:#5dcaa5; padding:4px 12px; border-radius:20px; font-size:12px;">🎓 UNINOVE — Ciência da Computação</span>
+        <span style="background:rgba(188,140,255,0.1); border:0.5px solid rgba(188,140,255,0.3); color:#bc8cff; padding:4px 12px; border-radius:20px; font-size:12px;">🌐 Inglês avançado</span>
+        <span style="background:rgba(240,153,123,0.1); border:0.5px solid rgba(240,153,123,0.3); color:#f0997b; padding:4px 12px; border-radius:20px; font-size:12px;">🇰🇷 Coreano básico</span>
+      </div>
+      <div class="faith-card">
+        ✝️ "Tudo posso naquele que me fortalece." — Filipenses 4:13
+      </div>
+    </div>
+    <div class="about-vibes reveal">
+      <div class="vibe-item">
+        <div class="vibe-icon">☕</div>
+        <div class="vibe-label"><strong>café é essencial</strong>sem café não tem código</div>
+      </div>
+      <div class="vibe-item">
+        <div class="vibe-icon">🎵</div>
+        <div class="vibe-label"><strong>música 24h</strong>lofi, disco, sempre rolando</div>
+      </div>
+      <div class="vibe-item">
+        <div class="vibe-icon">🎮</div>
+        <div class="vibe-label"><strong>gamer</strong>quando não estou codando</div>
+      </div>
+      <div class="vibe-item">
+        <div class="vibe-icon">🎨</div>
+        <div class="vibe-label"><strong>arte & design</strong>olhar de designer em tudo</div>
+      </div>
+      <div class="vibe-item">
+        <div class="vibe-icon">🙏</div>
+        <div class="vibe-label"><strong>Deus em primeiro</strong>fé que move montanhas</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Skills -->
+<section id="skills">
+  <p class="section-label reveal">// 002</p>
+  <h2 class="section-title reveal">skills & ferramentas</h2>
+  <div class="skills-grid">
+    <div class="skill-card reveal"><div class="skill-icon">🌐</div><div class="skill-name">HTML5</div><div class="skill-level">sólido</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">🎨</div><div class="skill-name">CSS3</div><div class="skill-level">sólido</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">⚡</div><div class="skill-name">JavaScript</div><div class="skill-level">sólido</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">🐍</div><div class="skill-name">Python</div><div class="skill-level">sólido</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">🟢</div><div class="skill-name">Node.js</div><div class="skill-level">sólido</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">⚛️</div><div class="skill-name">React</div><div class="skill-level learning">aprendendo ✦</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">©️</div><div class="skill-name">C / C++</div><div class="skill-level">sólido</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">🔷</div><div class="skill-name">C#</div><div class="skill-level">sólido</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">🗄️</div><div class="skill-name">SQL / PL/SQL</div><div class="skill-level">sólido</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">🔶</div><div class="skill-name">Oracle DB</div><div class="skill-level">sólido</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">🤖</div><div class="skill-name">Arduino</div><div class="skill-level">sólido</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">🖌️</div><div class="skill-name">Figma</div><div class="skill-level">sólido</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">🟦</div><div class="skill-name">Canva</div><div class="skill-level">sólido</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">🔧</div><div class="skill-name">Git</div><div class="skill-level">sólido</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">🌐</div><div class="skill-name">Inglês</div><div class="skill-level">avançado</div></div>
+    <div class="skill-card reveal"><div class="skill-icon">🇰🇷</div><div class="skill-name">Coreano</div><div class="skill-level">básico</div></div>
+  </div>
+</section>
+
+<!-- Projetos -->
+<section id="projetos">
+  <p class="section-label reveal">// 003</p>
+  <h2 class="section-title reveal">projetos</h2>
+  <div class="projects-grid">
+
+    <div class="project-card reveal">
+      <div class="project-num">001</div>
+      <span class="em-breve">em breve</span>
+      <h3 class="project-title">Projeto 01</h3>
+      <p class="project-desc">Adicione a descrição do seu projeto aqui. O que ele faz? Qual problema resolve? Para quem foi feito?</p>
+      <div class="project-tags">
+        <span class="project-tag">HTML</span>
+        <span class="project-tag">CSS</span>
+        <span class="project-tag">JS</span>
+      </div>
+      <a href="#" class="project-link">ver projeto →</a>
+    </div>
+
+    <div class="project-card reveal">
+      <div class="project-num">002</div>
+      <span class="em-breve">em breve</span>
+      <h3 class="project-title">Projeto 02</h3>
+      <p class="project-desc">Adicione a descrição do seu projeto aqui. O que ele faz? Qual problema resolve? Para quem foi feito?</p>
+      <div class="project-tags">
+        <span class="project-tag">Python</span>
+        <span class="project-tag">Node.js</span>
+        <span class="project-tag">Figma</span>
+      </div>
+      <a href="#" class="project-link">ver projeto →</a>
+    </div>
+
+    <div class="project-card reveal">
+      <div class="project-num">003</div>
+      <span class="em-breve">em breve</span>
+      <h3 class="project-title">Projeto 03</h3>
+      <p class="project-desc">Adicione a descrição do seu projeto aqui. O que ele faz? Qual problema resolve? Para quem foi feito?</p>
+      <div class="project-tags">
+        <span class="project-tag">UI/UX</span>
+        <span class="project-tag">Canva</span>
+        <span class="project-tag">React</span>
+      </div>
+      <a href="#" class="project-link">ver projeto →</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- Contato -->
+<section id="contato">
+  <p class="section-label reveal">// 004</p>
+  <h2 class="section-title reveal">vamos conversar?</h2>
+  <div class="contact-inner">
+    <p class="contact-desc reveal">
+      Disponível para projetos freelance, colaborações e novas oportunidades. Manda uma mensagem — adoro conhecer pessoas e ideias novas! ☕
+    </p>
+    <div class="contact-links">
+      <a href="https://wa.me/5511964451339" target="_blank" class="contact-link reveal">
+        <div class="contact-icon" style="background:rgba(37,211,102,0.1);">💬</div>
+        <div>
+          <div class="contact-info-label">whatsapp</div>
+          <div class="contact-info-val">+55 11 96445-1339</div>
+        </div>
+        <div class="contact-arrow">→</div>
+      </a>
+      <a href="https://www.linkedin.com/in/ryan-marcos-da-silva-71061b23a/" target="_blank" class="contact-link reveal">
+        <div class="contact-icon" style="background:rgba(0,119,181,0.1);">💼</div>
+        <div>
+          <div class="contact-info-label">linkedin</div>
+          <div class="contact-info-val">Ryan Marcos da Silva</div>
+        </div>
+        <div class="contact-arrow">→</div>
+      </a>
+      <a href="https://github.com/RymSilva" target="_blank" class="contact-link reveal">
+        <div class="contact-icon" style="background:rgba(188,140,255,0.1);">🐙</div>
+        <div>
+          <div class="contact-info-label">github</div>
+          <div class="contact-info-val">github.com/RymSilva</div>
+        </div>
+        <div class="contact-arrow">→</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-left">© 2026 Ryan Silva — feito com ☕ + 🎵 + 🙏</div>
+  <div class="footer-right">design & código por <span>Rym</span></div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 5 + 'px';
+    cursor.style.top = my - 5 + 'px';
+  });
+
+  function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx - 18 + 'px';
+    ring.style.top = ry - 18 + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => { cursor.style.transform = 'scale(2.5)'; });
+    el.addEventListener('mouseleave', () => { cursor.style.transform = 'scale(1)'; });
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
